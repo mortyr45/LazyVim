@@ -220,7 +220,7 @@ function M.setup(opts)
     msg = "Could not load your colorscheme",
     on_error = function(msg)
       LazyVim.error(msg)
-      vim.cmd.colorscheme("habamax")
+      vim.cmd.colorscheme("tokyonight")
     end,
   })
   LazyVim.track()

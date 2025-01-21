@@ -6,21 +6,19 @@ return {
     cmd = "Neotree",
     keys = {
       {
-        "<leader>fe",
+        "<leader>e",
         function()
           require("neo-tree.command").execute({ toggle = true, dir = LazyVim.root() })
         end,
         desc = "Explorer NeoTree (Root Dir)",
       },
       {
-        "<leader>fE",
+        "<leader>E",
         function()
           require("neo-tree.command").execute({ toggle = true, dir = vim.uv.cwd() })
         end,
         desc = "Explorer NeoTree (cwd)",
       },
-      { "<leader>e", "<leader>fe", desc = "Explorer NeoTree (Root Dir)", remap = true },
-      { "<leader>E", "<leader>fE", desc = "Explorer NeoTree (cwd)", remap = true },
       {
         "<leader>ge",
         function()
@@ -68,24 +66,7 @@ return {
       },
       window = {
         mappings = {
-          ["l"] = "open",
-          ["h"] = "close_node",
-          ["<space>"] = "none",
-          ["Y"] = {
-            function(state)
-              local node = state.tree:get_node()
-              local path = node:get_id()
-              vim.fn.setreg("+", path, "c")
-            end,
-            desc = "Copy Path to Clipboard",
-          },
-          ["O"] = {
-            function(state)
-              require("lazy.util").open(state.tree:get_node().path, { system = true })
-            end,
-            desc = "Open with System Application",
-          },
-          ["P"] = { "toggle_preview", config = { use_float = false } },
+          ["e"] = "close_window"
         },
       },
       default_component_configs = {
@@ -150,25 +131,6 @@ return {
     },
   },
 
-  -- Flash enhances the built-in search functionality by showing labels
-  -- at the end of each match, letting you quickly jump to a specific
-  -- location.
-  {
-    "folke/flash.nvim",
-    event = "VeryLazy",
-    vscode = true,
-    ---@type Flash.Config
-    opts = {},
-    -- stylua: ignore
-    keys = {
-      { "s", mode = { "n", "x", "o" }, function() require("flash").jump() end, desc = "Flash" },
-      { "S", mode = { "n", "o", "x" }, function() require("flash").treesitter() end, desc = "Flash Treesitter" },
-      { "r", mode = "o", function() require("flash").remote() end, desc = "Remote Flash" },
-      { "R", mode = { "o", "x" }, function() require("flash").treesitter_search() end, desc = "Treesitter Search" },
-      { "<c-s>", mode = { "c" }, function() require("flash").toggle() end, desc = "Toggle Flash Search" },
-    },
-  },
-
   -- which-key helps you remember key bindings by showing a popup
   -- with the active keybindings of the command you started typing.
   {
@@ -181,22 +143,12 @@ return {
       spec = {
         {
           mode = { "n", "v" },
-          { "<leader><tab>", group = "tabs" },
           { "<leader>c", group = "code" },
-          { "<leader>d", group = "debug" },
-          { "<leader>dp", group = "profiler" },
           { "<leader>f", group = "file/find" },
-          { "<leader>g", group = "git" },
-          { "<leader>gh", group = "hunks" },
           { "<leader>q", group = "quit/session" },
           { "<leader>s", group = "search" },
           { "<leader>u", group = "ui", icon = { icon = "󰙵 ", color = "cyan" } },
-          { "<leader>x", group = "diagnostics/quickfix", icon = { icon = "󱖫 ", color = "green" } },
-          { "[", group = "prev" },
-          { "]", group = "next" },
-          { "g", group = "goto" },
-          { "gs", group = "surround" },
-          { "z", group = "fold" },
+          { "<leader>g", group = "git" },
           {
             "<leader>b",
             group = "buffer",
@@ -204,34 +156,24 @@ return {
               return require("which-key.extras").expand.buf()
             end,
           },
-          {
-            "<leader>w",
-            group = "windows",
-            proxy = "<c-w>",
-            expand = function()
-              return require("which-key.extras").expand.win()
-            end,
-          },
-          -- better descriptions
-          { "gx", desc = "Open with system app" },
         },
       },
     },
     keys = {
-      {
-        "<leader>?",
-        function()
-          require("which-key").show({ global = false })
-        end,
-        desc = "Buffer Keymaps (which-key)",
-      },
-      {
-        "<c-w><space>",
-        function()
-          require("which-key").show({ keys = "<c-w>", loop = true })
-        end,
-        desc = "Window Hydra Mode (which-key)",
-      },
+      -- {
+      --   "<leader>?",
+      --   function()
+      --     require("which-key").show({ global = false })
+      --   end,
+      --   desc = "Buffer Keymaps (which-key)",
+      -- },
+      -- {
+      --   "<c-w><space>",
+      --   function()
+      --     require("which-key").show({ keys = "<c-w>", loop = true })
+      --   end,
+      --   desc = "Window Hydra Mode (which-key)",
+      -- },
     },
     config = function(_, opts)
       local wk = require("which-key")
@@ -273,33 +215,8 @@ return {
         end
 
         -- stylua: ignore start
-        map("n", "]h", function()
-          if vim.wo.diff then
-            vim.cmd.normal({ "]c", bang = true })
-          else
-            gs.nav_hunk("next")
-          end
-        end, "Next Hunk")
-        map("n", "[h", function()
-          if vim.wo.diff then
-            vim.cmd.normal({ "[c", bang = true })
-          else
-            gs.nav_hunk("prev")
-          end
-        end, "Prev Hunk")
-        map("n", "]H", function() gs.nav_hunk("last") end, "Last Hunk")
-        map("n", "[H", function() gs.nav_hunk("first") end, "First Hunk")
-        map({ "n", "v" }, "<leader>ghs", ":Gitsigns stage_hunk<CR>", "Stage Hunk")
-        map({ "n", "v" }, "<leader>ghr", ":Gitsigns reset_hunk<CR>", "Reset Hunk")
-        map("n", "<leader>ghS", gs.stage_buffer, "Stage Buffer")
-        map("n", "<leader>ghu", gs.undo_stage_hunk, "Undo Stage Hunk")
-        map("n", "<leader>ghR", gs.reset_buffer, "Reset Buffer")
-        map("n", "<leader>ghp", gs.preview_hunk_inline, "Preview Hunk Inline")
-        map("n", "<leader>ghb", function() gs.blame_line({ full = true }) end, "Blame Line")
-        map("n", "<leader>ghB", function() gs.blame() end, "Blame Buffer")
-        map("n", "<leader>ghd", gs.diffthis, "Diff This")
-        map("n", "<leader>ghD", function() gs.diffthis("~") end, "Diff This ~")
-        map({ "o", "x" }, "ih", ":<C-U>Gitsigns select_hunk<CR>", "GitSigns Select Hunk")
+        map({ "n", "v" }, "<leader>gs", "<cmd>Gitsigns stage_hunk<cr>", "Stage Hunk")
+        map({ "n", "v" }, "<leader>gu", "<cmd>Gitsigns reset_hunk<cr>", "Reset Hunk")
       end,
     },
   },
@@ -330,40 +247,10 @@ return {
       },
     },
     keys = {
-      { "<leader>xx", "<cmd>Trouble diagnostics toggle<cr>", desc = "Diagnostics (Trouble)" },
-      { "<leader>xX", "<cmd>Trouble diagnostics toggle filter.buf=0<cr>", desc = "Buffer Diagnostics (Trouble)" },
+      { "<leader>sx", "<cmd>Trouble diagnostics toggle<cr>", desc = "Diagnostics (Trouble)" },
+      { "<leader>sX", "<cmd>Trouble diagnostics toggle filter.buf=0<cr>", desc = "Buffer Diagnostics (Trouble)" },
       { "<leader>cs", "<cmd>Trouble symbols toggle<cr>", desc = "Symbols (Trouble)" },
       { "<leader>cS", "<cmd>Trouble lsp toggle<cr>", desc = "LSP references/definitions/... (Trouble)" },
-      { "<leader>xL", "<cmd>Trouble loclist toggle<cr>", desc = "Location List (Trouble)" },
-      { "<leader>xQ", "<cmd>Trouble qflist toggle<cr>", desc = "Quickfix List (Trouble)" },
-      {
-        "[q",
-        function()
-          if require("trouble").is_open() then
-            require("trouble").prev({ skip_groups = true, jump = true })
-          else
-            local ok, err = pcall(vim.cmd.cprev)
-            if not ok then
-              vim.notify(err, vim.log.levels.ERROR)
-            end
-          end
-        end,
-        desc = "Previous Trouble/Quickfix Item",
-      },
-      {
-        "]q",
-        function()
-          if require("trouble").is_open() then
-            require("trouble").next({ skip_groups = true, jump = true })
-          else
-            local ok, err = pcall(vim.cmd.cnext)
-            if not ok then
-              vim.notify(err, vim.log.levels.ERROR)
-            end
-          end
-        end,
-        desc = "Next Trouble/Quickfix Item",
-      },
     },
   },
 
@@ -371,17 +258,12 @@ return {
   -- in your project and loads them into a browsable list.
   {
     "folke/todo-comments.nvim",
-    cmd = { "TodoTrouble", "TodoTelescope" },
+    cmd = { "TodoTrouble" },
     event = "LazyFile",
     opts = {},
     -- stylua: ignore
     keys = {
-      { "]t", function() require("todo-comments").jump_next() end, desc = "Next Todo Comment" },
-      { "[t", function() require("todo-comments").jump_prev() end, desc = "Previous Todo Comment" },
-      { "<leader>xt", "<cmd>Trouble todo toggle<cr>", desc = "Todo (Trouble)" },
-      { "<leader>xT", "<cmd>Trouble todo toggle filter = {tag = {TODO,FIX,FIXME}}<cr>", desc = "Todo/Fix/Fixme (Trouble)" },
-      { "<leader>st", "<cmd>TodoTelescope<cr>", desc = "Todo" },
-      { "<leader>sT", "<cmd>TodoTelescope keywords=TODO,FIX,FIXME<cr>", desc = "Todo/Fix/Fixme" },
+      { "<leader>st", "<cmd>Trouble todo toggle<cr>", desc = "Todo (Trouble)" },
     },
   },
 
